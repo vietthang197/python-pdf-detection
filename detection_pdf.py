@@ -1,8 +1,9 @@
 #first step: [pip3 install pymupdf]
-import fitz
 import re
 
-doc = fitz.open('D:/cv_input.pdf')
+import fitz
+
+doc = fitz.open('D:/mycv.pdf')
 page = doc[0]
 line = page.get_text()
 match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', line)
@@ -25,4 +26,20 @@ for location in rect2:
     page.draw_rect(location,color=[0.96,0.24,0.67,0], fill=GRAY,stroke_opacity=1, fill_opacity=1, oc=0)
     page.add_redact_annot(location)
     page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_PIXELS)
+
+def findUrl(string):
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex,string)
+    return [x[0] for x in url]
+
+url_arr = findUrl(line)
+print(url_arr)
+for urlhide in  url_arr:
+    rect3 = page.search_for(urlhide)
+    for location in rect3:
+        page.wrap_contents()
+        page.draw_rect(location,color=[0.96,0.24,0.67,0], fill=GRAY,stroke_opacity=1, fill_opacity=1, oc=0)
+        page.add_redact_annot(location)
+        page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_PIXELS)
+
 doc.save('D:/cv_output.pdf')
